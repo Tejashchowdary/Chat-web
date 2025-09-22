@@ -21,7 +21,8 @@ const server = createServer(app);
 
 // Initialize Socket.IO with CORS
 const allowedOrigins = [
-  process.env.FRONTEND_URL || "http://localhost:5173"
+ 'http://localhost:5173', // local dev
+  'https://chat-web-alpha-six.vercel.app' // production frontend
 ];
 
 const io = new Server(server, {
