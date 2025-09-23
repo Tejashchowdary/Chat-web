@@ -26,7 +26,6 @@ export const useSocketStore = create((set, get) => ({
     newSocket.on('connect', () => {
       console.log('Connected to server')
       set({ socket: newSocket })
-       useCallStore.getState().initializeCall(newSocket)
     })
 
     newSocket.on('userStatusUpdate', ({ userId, status }) => {
