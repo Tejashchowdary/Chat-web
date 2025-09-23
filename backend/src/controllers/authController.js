@@ -136,7 +136,7 @@ export const updateProfile = async (req, res) => {
       {
         ...(username && { username }),
         ...(email && { email }),
-        ...(avatar && { avatar })
+      ...(avatar !== undefined && { avatar })
       },
       { new: true, runValidators: true }
     );

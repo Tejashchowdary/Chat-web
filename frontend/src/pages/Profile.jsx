@@ -39,6 +39,7 @@ const Profile = () => {
       setAvatarPreview(uploadedFile.url)
       
       toast.success('Avatar uploaded successfully!')
+        await updateProfile({ ...formData, avatar: uploadedFile.url })
     } catch (error) {
       toast.error(error.message || 'Failed to upload avatar')
       setAvatarPreview(user?.avatar || '')
