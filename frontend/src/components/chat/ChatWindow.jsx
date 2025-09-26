@@ -141,20 +141,32 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
   };
 
   // File upload
-  const handleFileUpload = (file) => {
-    if (!currentChat) return;
-    const messageData = {
+   const handleFileUpload = (file) => {
+    if (!currentChat) return
+
+    const msgData = {
       content: file.filename,
-      messageType: file.mimeType.startsWith("image/")
-        ? "image"
-        : file.mimeType.startsWith("video/")
-        ? "video"
-        : "file",
+      messageType: file.mimeType.startsWith('image/')
+        ? 'image'
+        : file.mimeType.startsWith('video/')
+        ? 'video'
+        : 'file',
       media: file,
       chatId: currentChat._id,
-    };
-    socket?.emit("sendMessage", messageData);
-  };
+    }
+
+    const tempMsg = {
+      ...msgData,
+      _id: `temp-${Date.now()}`,
+      sender: user,
+      createdAt: new Date(),
+      chat: currentChat._id,
+    }
+
+    addMessage(tempMsg)          // Show immediately
+    socket?.emit('sendMessage', msgData)
+  }
+
 
   // Calls
   const handleCall = (callType) => {
@@ -305,11 +317,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
           onSubmit={handleSendMessage}
           className="flex items-center space-x-2 sm:space-x-3"
         >
-          <button
-            type="button"
-            onClick={() => setShowFileUpload(true)}
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-          >
+           <button type="button" onClick={() => setShowFileUpload(true)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
             <Paperclip className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
 
@@ -381,3 +389,6 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
 };
 
 export default ChatWindow;
+
+
+// i want to update the chatwindow.jsx ,fileUpload.jsx and messagebubble.jsx fileUpload.js and in backend index.js 

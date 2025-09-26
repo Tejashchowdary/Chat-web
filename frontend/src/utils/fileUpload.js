@@ -72,5 +72,7 @@ export const getFileIcon = (mimeType) => {
   if (mimeType.includes('pdf')) return '📄'
   if (mimeType.includes('word')) return '📝'
   if (mimeType.includes('text')) return '📄'
+  if (mimeType.includes('excel')) return '📊'
+  if (mimeType.includes('powerpoint')) return '📈'
   return '📎'
 }

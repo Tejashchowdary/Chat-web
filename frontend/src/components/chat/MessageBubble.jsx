@@ -1,22 +1,20 @@
 import { motion } from 'framer-motion'
 import { formatFileSize, getFileIcon } from '../../utils/fileUpload'
 
-// Helper to check if a message is only emojis
+// Helper: check if message is only emojis
 const isOnlyEmoji = (text) => {
   return text && text.replace(/\s/g, '').match(/^\p{Emoji}+$/u)
 }
 
 const MessageBubble = ({ message, isOwn }) => {
-  // Format date + time with Today / Yesterday / Older
+  // Format timestamp nicely
   const formatDateTime = (date) => {
     const d = new Date(date)
     const now = new Date()
-
     const isToday =
       d.getDate() === now.getDate() &&
       d.getMonth() === now.getMonth() &&
       d.getFullYear() === now.getFullYear()
-
     const yesterday = new Date()
     yesterday.setDate(now.getDate() - 1)
     const isYesterday =
@@ -24,35 +22,31 @@ const MessageBubble = ({ message, isOwn }) => {
       d.getMonth() === yesterday.getMonth() &&
       d.getFullYear() === yesterday.getFullYear()
 
-    if (isToday) {
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    } else if (isYesterday) {
+    if (isToday) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    if (isYesterday)
       return `Yesterday, ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-    } else {
-      return d.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    }
+    return d.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
   }
 
+  // Render message content based on type
   const renderMessageContent = () => {
     switch (message.messageType) {
       case 'image':
         return (
           <div className="max-w-xs sm:max-w-sm lg:max-w-md">
             <img
-              src={message.media.url}
+              src={message.media?.url || '/placeholder.png'}
               alt={message.content || 'Image'}
               className="rounded-lg w-full h-auto"
               loading="lazy"
             />
-            {message.content && (
-              <p className="mt-2 text-sm break-words">{message.content}</p>
-            )}
+            {message.content && <p className="mt-2 text-sm break-words">{message.content}</p>}
           </div>
         )
 
@@ -60,26 +54,24 @@ const MessageBubble = ({ message, isOwn }) => {
         return (
           <div className="max-w-xs sm:max-w-sm lg:max-w-md">
             <video
-              src={message.media.url}
+              src={message.media?.url}
               controls
               className="rounded-lg w-full h-auto"
             />
-            {message.content && (
-              <p className="mt-2 text-sm break-words">{message.content}</p>
-            )}
+            {message.content && <p className="mt-2 text-sm break-words">{message.content}</p>}
           </div>
         )
 
       case 'file':
         return (
           <div className="flex items-center space-x-3 p-3 bg-white bg-opacity-20 rounded-lg max-w-xs sm:max-w-sm lg:max-w-md">
-            <div className="text-2xl">{getFileIcon(message.media.mimeType)}</div>
+            <div className="text-2xl">{getFileIcon(message.media?.mimeType)}</div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{message.media.filename}</p>
-              <p className="text-xs opacity-75">{formatFileSize(message.media.size)}</p>
+              <p className="text-sm font-medium truncate">{message.media?.filename}</p>
+              <p className="text-xs opacity-75">{formatFileSize(message.media?.size || 0)}</p>
             </div>
             <a
-              href={message.media.url}
+              href={message.media?.url}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs underline opacity-75 hover:opacity-100"
@@ -124,7 +116,7 @@ const MessageBubble = ({ message, isOwn }) => {
       >
         {!isOwn && (
           <p className="text-xs font-medium mb-1 opacity-75 truncate">
-            {message.sender.username}
+            {message.sender?.username}
           </p>
         )}
 

@@ -21,8 +21,7 @@ const server = createServer(app);
 
 // Initialize Socket.IO with CORS
 const allowedOrigins = [
- 'http://localhost:5173', // local dev
-  'https://chat-web-alpha-six.vercel.app' // production frontend
+  process.env.FRONTEND_URL || "http://localhost:5173"
 ];
 
 const io = new Server(server, {
@@ -127,7 +126,8 @@ io.on('connection', (socket) => {
         .populate('sender', 'username email avatar');
 
       // Broadcast to all users in the room EXCEPT the sender
-      socket.to(messageData.chatId).emit('newMessage', populatedMessage);
+      io.in(messageData.chatId).emit('newMessage', populatedMessage);
+
 
       // Also broadcast chat update to all users EXCEPT the sender
       const updatedChat = await Chat.findById(messageData.chatId)
