@@ -38,7 +38,7 @@ const Sidebar = ({ onNewChat, onClose }) => {
     })
 
   const handleChatSelect = (chat) => {
-    setCurrentChat(chat)
+    useChatStore.getState().setCurrentChat(chat)
     if (onClose) onClose()
   }
 

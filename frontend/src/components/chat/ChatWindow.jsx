@@ -29,6 +29,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
   const typingTimeoutRef = useRef(null)
   const prevChatIdRef = useRef(null)
   const emojiPickerRef = useRef(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const { user } = useAuthStore()
   const { currentChat, messages, getChatMessages, addMessage, updateChat } =
@@ -92,7 +93,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
     return () => {
       if (currentChat) leaveRoom(currentChat._id)
     }
-  }, [currentChat, getChatMessages, joinRoom, leaveRoom])
+  }, [currentChat, getChatMessages, joinRoom, leaveRoom,currentChat, refreshKey])
 
   // Send message
   const handleSendMessage = (e) => {
@@ -297,7 +298,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t border-gray-200 p-2 sm:p-4">
+      <div className="bg-white border-t border-gray-200 p-2 sm:p-4 sticky bottom-0 z-30">
         <form
           onSubmit={handleSendMessage}
           className="flex items-center space-x-2 sm:space-x-3"
@@ -316,7 +317,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
               value={message}
               onChange={(e) => handleTyping(e.target.value)}
               placeholder="Type a message..."
-              className="w-full px-3 py-2 bg-gray-100 rounded-full focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none text-sm sm:text-base"
+              className="w-full px-3 py-2 bg-gray-100 rounded-full focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none text-sm sm:text-base resize-none"
             />
 
             {/* Smile Button */}
@@ -336,7 +337,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute z-50 shadow-lg rounded-lg bg-white max-w-[90vw] sm:max-w-[300px] w-full sm:w-auto"
+                 className="absolute z-50 shadow-lg rounded-lg bg-white max-w-[90vw] sm:max-w-[300px] w-full sm:w-auto"
                   style={{
                     bottom: "3rem", // positions above input
                     right: 0,

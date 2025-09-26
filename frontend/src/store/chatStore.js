@@ -8,8 +8,11 @@ export const useChatStore = create((set, get) => ({
   messages: [],
   isLoading: false,
 
-  setCurrentChat: (chat) => {
+  setCurrentChat: (chat, reloadMessages = true) => {
     set({ currentChat: chat, messages: [] })
+     if (reloadMessages) {
+      get().refreshChatMessages(chat._id)
+    }
   },
 
   getChats: async () => {
@@ -53,6 +56,10 @@ export const useChatStore = create((set, get) => ({
     } finally {
       set({ isLoading: false })
     }
+  },
+
+   refreshChatMessages: async (chatId) => {
+    await get().getChatMessages(chatId)
   },
 
   sendMessage: async (chatId, messageData) => {
@@ -126,4 +133,5 @@ export const useChatStore = create((set, get) => ({
       return []
     }
   }
+  
 }))
