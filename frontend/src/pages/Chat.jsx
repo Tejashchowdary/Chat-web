@@ -7,11 +7,11 @@ import { useCallStore } from '../store/callStore'
 import Sidebar from '../components/chat/Sidebar'
 import ChatWindow from '../components/chat/ChatWindow'
 import UserSearch from '../components/chat/UserSearch'
-import { Menu } from "lucide-react"
+
 const Chat = () => {
   const [showUserSearch, setShowUserSearch] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
-  const [showSidebar, setShowSidebar] = useState(true)
+  const [showSidebar, setShowSidebar] = useState(!isMobile)
 
   const { socket } = useSocketStore()
   const { currentChat, getChats, addMessage } = useChatStore()
@@ -23,7 +23,7 @@ const Chat = () => {
       setIsMobile(mobile)
       setShowSidebar(!mobile)
     }
-     handleResize()
+
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
@@ -61,19 +61,10 @@ useEffect(() => {
         }}
         transition={{ type: "spring", damping: 20, stiffness: 100 }}
         className={`
-          ${isMobile ? 'fixed z-30 sidebar-mobile' : 'relative w-80'} 
+          ${isMobile ? 'fixed z-20 sidebar-mobile' : 'relative w-80'} 
           h-full bg-white border-r border-gray-200
         `}
       >
-           {/* Hamburger inside Sidebar for mobile */}
-        {isMobile && (
-          <button
-            onClick={() => setShowSidebar(false)}
-            className="absolute top-2 right-4 p-2 bg-white rounded-md shadow hover:bg-gray-100 z-40"
-          >
-            <Menu className="w-6 h-6 text-gray-700" />
-          </button>
-        )}
         <Sidebar 
           onNewChat={() => setShowUserSearch(true)}
           onClose={() => isMobile && setShowSidebar(false)}
@@ -89,17 +80,7 @@ useEffect(() => {
       )}
 
       {/* Chat Window */}
-      
       <div className="flex-1 flex flex-col">
-        {/* Hamburger inside ChatWindow for mobile */}
-        {isMobile && !showSidebar && (
-          <button
-            onClick={() => setShowSidebar(true)}
-            className="absolute top-2 left-1.5 z-40 p-2 bg-white rounded-md shadow hover:bg-gray-100"
-          >
-            <Menu className="w-6 h-6 text-gray-700" />
-          </button>
-        )}
         <ChatWindow 
           onToggleSidebar={() => setShowSidebar(!showSidebar)}
           isMobile={isMobile}

@@ -42,84 +42,65 @@ const ChatListItem = ({
     
     return messageDate.toLocaleDateString()
   }
-  
-   const hasUnread = chat.unreadCount > 0 
 
- 
-
-
-   return (
-     <motion.div
-       whileHover={{ backgroundColor: "#f9fafb" }}
-       onClick={onClick}
-       className={`
-        flex items-center px-2 sm:px-4 py-2 sm:py-3 cursor-pointer transition-colors relative
-        ${
-          isSelected
-            ? "bg-primary-50 border-r-2 border-primary-500"
-            : "hover:bg-gray-50"
-        }
+  return (
+    <motion.div
+      whileHover={{ backgroundColor: '#f9fafb' }}
+      onClick={onClick}
+      className={`
+        flex items-center px-3 sm:px-4 py-3 cursor-pointer transition-colors relative touch-button
+        ${isSelected ? 'bg-primary-50 border-r-2 border-primary-500' : 'hover:bg-gray-50'}
       `}
-     >
-       {/* Avatar */}
-       <div className="relative mr-2 sm:mr-3 flex-shrink-0">
-         <div className="w-9 h-9 sm:w-12 sm:h-12 bg-primary-500 rounded-full flex items-center justify-center overflow-hidden">
-           {chat.isGroupChat ? (
-             <Users className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-           ) : chat.participants.find((p) => p._id !== currentUser._id)
-               ?.avatar ? (
-             <img
-               src={
-                 chat.participants.find((p) => p._id !== currentUser._id).avatar
-               }
-               alt="Avatar"
-               className="w-full h-full object-cover"
-             />
-           ) : (
-             <User className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-           )}
-         </div>
+    >
+      {/* Avatar */}
+      <div className="relative mr-3 flex-shrink-0">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-500 rounded-full flex items-center justify-center">
+          {chat.isGroupChat ? (
+            <Users className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+          ) : chat.participants.find(p => p._id !== currentUser._id)?.avatar ? (
+            <img 
+              src={chat.participants.find(p => p._id !== currentUser._id).avatar} 
+              alt="Avatar" 
+              className="avatar-preview"
+            />
+          ) : (
+            <User className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+          )}
+        </div>
+        {!chat.isGroupChat && isOnline && (
+          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-4 sm:h-4 bg-green-500 border-2 border-white rounded-full" />
+        )}
+      </div>
 
-         {/* Online status for each participant */}
-         {chat.isGroupChat
-           ? chat.participants
-               .filter(
-                 (p) => p._id !== currentUser._id && onlineUsers.has(p._id)
-               )
-               .map((p, idx) => (
-                 <div
-                   key={p._id}
-                   style={{
-                     bottom: "-2px",
-                     right: `${2 + idx * 8}px`, // spacing between multiple dots
-                   }}
-                   className="absolute w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-white rounded-full"
-                 />
-               ))
-           : isOnline && (
-               <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 sm:w-4 sm:h-4 bg-green-500 border-2 border-white rounded-full" />
-             )}
-       </div>
+      {/* Chat Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-sm sm:text-base font-medium text-gray-800 truncate">
+            {getDisplayName()}
+          </h3>
+          {chat.lastMessage && (
+            <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
+              {formatTime(chat.lastMessage.createdAt)}
+            </span>
+          )}
+        </div>
+        
+        <p className="text-xs sm:text-sm text-gray-500 truncate">
+          {getLastMessagePreview()}
+        </p>
+      </div>
 
-       {/* Chat Info */}
-       <div className="flex-1 min-w-0">
-         <div className="flex items-center justify-between mb-0.5 sm:mb-1">
-           <h3 className="text-sm sm:text-base font-medium text-gray-800 truncate max-w-[70%] sm:max-w-none">
-             {getDisplayName()}
-           </h3>
-           {chat.lastMessage && (
-             <span className="text-[10px] sm:text-xs text-gray-500 flex-shrink-0 ml-1 sm:ml-2">
-               {formatTime(chat.lastMessage.createdAt)}
-             </span>
-           )}
-         </div>
-         <p className="text-xs sm:text-sm text-gray-500 truncate">
-           {getLastMessagePreview()}
-         </p>
-       </div>
-     </motion.div>
-   );
+      {/* Unread indicator */}
+      {/* TODO: Implement unread count */}
+      {false && (
+        <div className="ml-2 flex-shrink-0">
+          <div className="w-4 h-4 sm:w-5 sm:h-5 bg-primary-500 text-white text-xs rounded-full flex items-center justify-center">
+            3
+          </div>
+        </div>
+      )}
+    </motion.div>
+  )
 }
-
 
 export default ChatListItem
