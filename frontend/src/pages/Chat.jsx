@@ -57,15 +57,15 @@ useEffect(() => {
         initial={false}
         animate={{
           x: showSidebar ? 0 : isMobile ? -window.innerWidth : -320,
-          opacity: showSidebar ? 1 : isMobile ? 0 : 1
+          opacity: showSidebar ? 1 : isMobile ? 0 : 1,
         }}
         transition={{ type: "spring", damping: 20, stiffness: 100 }}
         className={`
-          ${isMobile ? 'fixed z-30 sidebar-mobile' : 'relative w-80'} 
+          ${isMobile ? "fixed z-30 sidebar-mobile" : "relative w-80"} 
           h-full bg-white border-r border-gray-200
         `}
       >
-           {/* Hamburger inside Sidebar for mobile */}
+        {/* Hamburger inside Sidebar for mobile */}
         {isMobile && (
           <button
             onClick={() => setShowSidebar(false)}
@@ -74,7 +74,7 @@ useEffect(() => {
             <Menu className="w-6 h-6 text-gray-700" />
           </button>
         )}
-        <Sidebar 
+        <Sidebar
           onNewChat={() => setShowUserSearch(true)}
           onClose={() => isMobile && setShowSidebar(false)}
         />
@@ -82,17 +82,17 @@ useEffect(() => {
 
       {/* Mobile overlay */}
       {isMobile && showSidebar && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-10 touch-none"
           onClick={() => setShowSidebar(false)}
         />
       )}
 
       {/* Chat Window */}
-      
-      <div className="flex-1 flex flex-col">
+
+      <div className="flex-1 flex flex-col relative">
         {/* Hamburger inside ChatWindow for mobile */}
-        {isMobile && !showSidebar && (
+        {isMobile && !showSidebar && !currentChat && (
           <button
             onClick={() => setShowSidebar(true)}
             className="absolute top-2 left-1.5 z-40 p-2 bg-white rounded-md shadow hover:bg-gray-100"
@@ -100,7 +100,8 @@ useEffect(() => {
             <Menu className="w-6 h-6 text-gray-700" />
           </button>
         )}
-        <ChatWindow 
+
+        <ChatWindow
           onToggleSidebar={() => setShowSidebar(!showSidebar)}
           isMobile={isMobile}
         />
@@ -116,13 +117,13 @@ useEffect(() => {
 
       {/* Mobile chat selected overlay */}
       {isMobile && currentChat && showSidebar && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-5 touch-none"
           onClick={() => setShowSidebar(false)}
         />
       )}
     </div>
-  )
+  );
 }
 
 export default Chat

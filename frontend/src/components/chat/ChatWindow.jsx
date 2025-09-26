@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react"
-import { motion ,AnimatePresence } from "framer-motion"
-import Picker from '@emoji-mart/react'
-import emojiData from '@emoji-mart/data'
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Picker from "@emoji-mart/react";
+import emojiData from "@emoji-mart/data";
 import {
   Menu,
   Phone,
@@ -11,37 +11,37 @@ import {
   Paperclip,
   Smile,
   User,
-} from "lucide-react"
+ ArrowLeft
+} from "lucide-react";
 
-import { useChatStore } from "../../store/chatStore"
-import { useSocketStore } from "../../store/socketStore"
-import { useCallStore } from "../../store/callStore"
-import { useAuthStore } from "../../store/authStore"
-import MessageBubble from "./MessageBubble"
-import FileUpload from "./FileUpload"
+import { useChatStore } from "../../store/chatStore";
+import { useSocketStore } from "../../store/socketStore";
+import { useCallStore } from "../../store/callStore";
+import { useAuthStore } from "../../store/authStore";
+import MessageBubble from "./MessageBubble";
+import FileUpload from "./FileUpload";
 
 const ChatWindow = ({ onToggleSidebar, isMobile }) => {
-  const [message, setMessage] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
-  const [showFileUpload, setShowFileUpload] = useState(false)
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const messagesEndRef = useRef(null)
-  const typingTimeoutRef = useRef(null)
-  const prevChatIdRef = useRef(null)
-  const emojiPickerRef = useRef(null)
-  const [refreshKey, setRefreshKey] = useState(0)
+  const [message, setMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const prevChatIdRef = useRef(null);
+  const emojiPickerRef = useRef(null);
 
-  const { user } = useAuthStore()
+  const { user } = useAuthStore();
   const { currentChat, messages, getChatMessages, addMessage, updateChat } =
-    useChatStore()
+    useChatStore();
   const { socket, joinRoom, leaveRoom, setTyping, typingUsers } =
-    useSocketStore()
-  const { startCall } = useCallStore()
+    useSocketStore();
+  const { startCall } = useCallStore();
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // Close emoji picker when clicking outside
   useEffect(() => {
@@ -50,61 +50,61 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
         emojiPickerRef.current &&
         !emojiPickerRef.current.contains(e.target)
       ) {
-        setShowEmojiPicker(false)
+        setShowEmojiPicker(false);
       }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Socket listeners
   useEffect(() => {
-    if (!socket) return
+    if (!socket) return;
 
     const handleNewMessage = (newMessage) => {
-      if (!currentChat || newMessage.chat !== currentChat._id) return
+      if (!currentChat || newMessage.chat !== currentChat._id) return;
       const exists = useChatStore
         .getState()
-        .messages.some((msg) => msg._id === newMessage._id)
-      if (!exists) addMessage(newMessage)
-    }
+        .messages.some((msg) => msg._id === newMessage._id);
+      if (!exists) addMessage(newMessage);
+    };
 
-    const handleChatUpdated = (updatedChat) => updateChat(updatedChat)
+    const handleChatUpdated = (updatedChat) => updateChat(updatedChat);
 
-    socket.on("newMessage", handleNewMessage)
-    socket.on("chatUpdated", handleChatUpdated)
+    socket.on("newMessage", handleNewMessage);
+    socket.on("chatUpdated", handleChatUpdated);
 
     return () => {
-      socket.off("newMessage", handleNewMessage)
-      socket.off("chatUpdated", handleChatUpdated)
-    }
-  }, [socket, currentChat, addMessage, updateChat])
+      socket.off("newMessage", handleNewMessage);
+      socket.off("chatUpdated", handleChatUpdated);
+    };
+  }, [socket, currentChat, addMessage, updateChat]);
 
   // Load messages + join/leave rooms
   useEffect(() => {
     if (currentChat) {
-      getChatMessages(currentChat._id)
-      joinRoom(currentChat._id)
+      getChatMessages(currentChat._id);
+      joinRoom(currentChat._id);
       if (prevChatIdRef.current && prevChatIdRef.current !== currentChat._id) {
-        leaveRoom(prevChatIdRef.current)
+        leaveRoom(prevChatIdRef.current);
       }
-      prevChatIdRef.current = currentChat._id
+      prevChatIdRef.current = currentChat._id;
     }
     return () => {
-      if (currentChat) leaveRoom(currentChat._id)
-    }
-  }, [currentChat, getChatMessages, joinRoom, leaveRoom,currentChat, refreshKey])
+      if (currentChat) leaveRoom(currentChat._id);
+    };
+  }, [currentChat, getChatMessages, joinRoom, leaveRoom]);
 
   // Send message
   const handleSendMessage = (e) => {
-    e.preventDefault()
-    if (!message.trim() || !currentChat) return
+    e.preventDefault();
+    if (!message.trim() || !currentChat) return;
 
     const messageData = {
       content: message,
       messageType: "text",
       chatId: currentChat._id,
-    }
+    };
 
     const optimisticMessage = {
       _id: `temp-${Date.now()}`,
@@ -113,36 +113,36 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
       chat: currentChat._id,
       sender: user,
       createdAt: new Date(),
-    }
-    addMessage(optimisticMessage)
-    socket?.emit("sendMessage", messageData)
-    setMessage("")
-    setIsTyping(false)
-    setTyping(currentChat._id, false)
-  }
+    };
+    addMessage(optimisticMessage);
+    socket?.emit("sendMessage", messageData);
+    setMessage("");
+    setIsTyping(false);
+    setTyping(currentChat._id, false);
+  };
 
   // Typing
   const handleTyping = (value) => {
-    setMessage(value)
+    setMessage(value);
     if (value.length > 0 && !isTyping) {
-      setIsTyping(true)
-      setTyping(currentChat._id, true)
+      setIsTyping(true);
+      setTyping(currentChat._id, true);
     }
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false)
-      setTyping(currentChat._id, false)
-    }, 3000)
-  }
+      setIsTyping(false);
+      setTyping(currentChat._id, false);
+    }, 3000);
+  };
 
   // Add emoji
   const addEmoji = (emoji) => {
-    setMessage((prev) => prev + emoji.native)
-  }
+    setMessage((prev) => prev + emoji.native);
+  };
 
   // File upload
   const handleFileUpload = (file) => {
-    if (!currentChat) return
+    if (!currentChat) return;
     const messageData = {
       content: file.filename,
       messageType: file.mimeType.startsWith("image/")
@@ -152,31 +152,31 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
         : "file",
       media: file,
       chatId: currentChat._id,
-    }
-    socket?.emit("sendMessage", messageData)
-  }
+    };
+    socket?.emit("sendMessage", messageData);
+  };
 
   // Calls
   const handleCall = (callType) => {
-    if (!currentChat || currentChat.isGroupChat) return
-    const otherUser = currentChat.participants.find((p) => p._id !== user._id)
-    if (otherUser && socket) startCall(otherUser._id, callType, socket)
-  }
+    if (!currentChat || currentChat.isGroupChat) return;
+    const otherUser = currentChat.participants.find((p) => p._id !== user._id);
+    if (otherUser && socket) startCall(otherUser._id, callType, socket);
+  };
 
   // Helpers
   const getChatDisplayName = () => {
-    if (!currentChat) return ""
-    if (currentChat.isGroupChat) return currentChat.name || "Group Chat"
-    const otherUser = currentChat.participants.find((p) => p._id !== user._id)
-    return otherUser?.username || "Unknown User"
-  }
+    if (!currentChat) return "";
+    if (currentChat.isGroupChat) return currentChat.name || "Group Chat";
+    const otherUser = currentChat.participants.find((p) => p._id !== user._id);
+    return otherUser?.username || "Unknown User";
+  };
 
   const getTypingUsers = () => {
-    if (!currentChat) return []
+    if (!currentChat) return [];
     return Array.from(typingUsers.keys())
       .map((id) => currentChat.participants.find((p) => p._id === id))
-      .filter((u) => u && u._id !== user._id)
-  }
+      .filter((u) => u && u._id !== user._id);
+  };
 
   // Empty state
   if (!currentChat) {
@@ -184,7 +184,9 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
       <div className="flex-1 flex items-center justify-center bg-gray-50 p-4 sm:p-6 md:p-8">
         <div className="text-center max-w-xs sm:max-w-sm md:max-w-md mx-auto">
           <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-primary-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <span className="text-white text-2xl sm:text-3xl md:text-4xl">💬</span>
+            <span className="text-white text-2xl sm:text-3xl md:text-4xl">
+              💬
+            </span>
           </div>
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-800 mb-2">
             Welcome to ChatApp
@@ -194,7 +196,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
           </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -207,7 +209,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
               onClick={onToggleSidebar}
               className="p-2 hover:bg-gray-100 rounded-lg"
             >
-              <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+              <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           )}
 
@@ -264,7 +266,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
       </div>
 
       {/* Messages */}
-      <div className={`flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 ${isMobile ? "pb-20" : ""}`}>
+      <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3">
         {messages.map((m) => (
           <MessageBubble
             key={m._id}
@@ -298,13 +300,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
       </div>
 
       {/* Input */}
-      <div
-        className={`bg-white border-t border-gray-200 p-2 sm:p-4 ${
-          isMobile
-            ? "fixed bottom-0 left-0 w-full z-50"
-            : "sticky bottom-0 z-30"
-        }`}
-      >
+      <div className="bg-white border-t border-gray-200 p-2 sm:p-4">
         <form
           onSubmit={handleSendMessage}
           className="flex items-center space-x-2 sm:space-x-3"
@@ -323,7 +319,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
               value={message}
               onChange={(e) => handleTyping(e.target.value)}
               placeholder="Type a message..."
-              className="w-full px-3 py-2 bg-gray-100 rounded-full focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none text-sm sm:text-base resize-none"
+              className="w-full px-3 py-2 bg-gray-100 rounded-full focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none text-sm sm:text-base"
             />
 
             {/* Smile Button */}
@@ -336,6 +332,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
             </button>
 
             {/* Emoji Picker */}
+            {/* Emoji Picker */}
             <AnimatePresence>
               {showEmojiPicker && (
                 <motion.div
@@ -343,9 +340,9 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute z-50 shadow-lg rounded-lg bg-white max-w-[90vw] sm:max-w-[300px] w-full sm:w-auto"
+                  className="absolute z-50 shadow-lg rounded-lg bg-white w-[260px] sm:w-[240px]"
                   style={{
-                    bottom: "3rem", // positions above input
+                    bottom: "3rem", // above input
                     right: 0,
                   }}
                 >
@@ -353,7 +350,8 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
                     data={emojiData}
                     onEmojiSelect={addEmoji}
                     theme="light"
-                    emojiSize={24}
+                    emojiSize={20} // slightly smaller for neat look
+                    perLine={7} // fewer columns → compact
                     previewPosition="none"
                   />
                 </motion.div>
@@ -380,6 +378,6 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
       )}
     </div>
   );
-}
+};
 
-export default ChatWindow
+export default ChatWindow;
