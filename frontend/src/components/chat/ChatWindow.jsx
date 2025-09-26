@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react"
-import { motion } from "framer-motion"
+import { motion ,AnimatePresence } from "framer-motion"
+import Picker from '@emoji-mart/react'
+import emojiData from '@emoji-mart/data'
 import {
   Menu,
   Phone,
@@ -22,9 +24,11 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
   const [message, setMessage] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const [showFileUpload, setShowFileUpload] = useState(false)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const messagesEndRef = useRef(null)
   const typingTimeoutRef = useRef(null)
   const prevChatIdRef = useRef(null)
+  const emojiPickerRef = useRef(null)
 
   const { user } = useAuthStore()
   const { currentChat, messages, getChatMessages, addMessage, updateChat } =
@@ -38,25 +42,33 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  // ✅ Socket listeners
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(e.target)
+      ) {
+        setShowEmojiPicker(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  // Socket listeners
   useEffect(() => {
     if (!socket) return
 
     const handleNewMessage = (newMessage) => {
       if (!currentChat || newMessage.chat !== currentChat._id) return
-
       const exists = useChatStore
         .getState()
         .messages.some((msg) => msg._id === newMessage._id)
-
-      if (!exists) {
-        addMessage(newMessage)
-      }
+      if (!exists) addMessage(newMessage)
     }
 
-    const handleChatUpdated = (updatedChat) => {
-      updateChat(updatedChat)
-    }
+    const handleChatUpdated = (updatedChat) => updateChat(updatedChat)
 
     socket.on("newMessage", handleNewMessage)
     socket.on("chatUpdated", handleChatUpdated)
@@ -67,26 +79,22 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
     }
   }, [socket, currentChat, addMessage, updateChat])
 
-  // ✅ Load messages + join/leave rooms
+  // Load messages + join/leave rooms
   useEffect(() => {
     if (currentChat) {
       getChatMessages(currentChat._id)
       joinRoom(currentChat._id)
-
       if (prevChatIdRef.current && prevChatIdRef.current !== currentChat._id) {
         leaveRoom(prevChatIdRef.current)
       }
       prevChatIdRef.current = currentChat._id
     }
-
     return () => {
-      if (currentChat) {
-        leaveRoom(currentChat._id)
-      }
+      if (currentChat) leaveRoom(currentChat._id)
     }
   }, [currentChat, getChatMessages, joinRoom, leaveRoom])
 
-  // ✅ Send message
+  // Send message
   const handleSendMessage = (e) => {
     e.preventDefault()
     if (!message.trim() || !currentChat) return
@@ -97,7 +105,6 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
       chatId: currentChat._id,
     }
 
-    // Optimistic update
     const optimisticMessage = {
       _id: `temp-${Date.now()}`,
       content: message,
@@ -107,38 +114,34 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
       createdAt: new Date(),
     }
     addMessage(optimisticMessage)
-
-    // Emit to backend
     socket?.emit("sendMessage", messageData)
-
     setMessage("")
     setIsTyping(false)
     setTyping(currentChat._id, false)
   }
 
-  // ✅ Typing
+  // Typing
   const handleTyping = (value) => {
     setMessage(value)
-
     if (value.length > 0 && !isTyping) {
       setIsTyping(true)
       setTyping(currentChat._id, true)
     }
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
-
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false)
       setTyping(currentChat._id, false)
     }, 3000)
   }
 
-  // ✅ File upload
+  // Add emoji
+  const addEmoji = (emoji) => {
+    setMessage((prev) => prev + emoji.native)
+  }
+
+  // File upload
   const handleFileUpload = (file) => {
     if (!currentChat) return
-
     const messageData = {
       content: file.filename,
       messageType: file.mimeType.startsWith("image/")
@@ -149,29 +152,22 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
       media: file,
       chatId: currentChat._id,
     }
-
     socket?.emit("sendMessage", messageData)
   }
 
-  // ✅ Calls
+  // Calls
   const handleCall = (callType) => {
     if (!currentChat || currentChat.isGroupChat) return
-
     const otherUser = currentChat.participants.find((p) => p._id !== user._id)
-    if (otherUser && socket) {
-      startCall(otherUser._id, callType, socket)
-    }
+    if (otherUser && socket) startCall(otherUser._id, callType, socket)
   }
 
-  // ✅ Helpers
+  // Helpers
   const getChatDisplayName = () => {
     if (!currentChat) return ""
-    if (currentChat.isGroupChat) {
-      return currentChat.name || "Group Chat"
-    } else {
-      const otherUser = currentChat.participants.find((p) => p._id !== user._id)
-      return otherUser?.username || "Unknown User"
-    }
+    if (currentChat.isGroupChat) return currentChat.name || "Group Chat"
+    const otherUser = currentChat.participants.find((p) => p._id !== user._id)
+    return otherUser?.username || "Unknown User"
   }
 
   const getTypingUsers = () => {
@@ -181,27 +177,25 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
       .filter((u) => u && u._id !== user._id)
   }
 
-  // ✅ Empty state
- if (!currentChat) {
-  return (
-    <div className="flex-1 flex items-center justify-center bg-gray-50 p-4 sm:p-6 md:p-8">
-      <div className="text-center max-w-xs sm:max-w-sm md:max-w-md mx-auto">
-        <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-primary-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-          <span className="text-white text-2xl sm:text-3xl md:text-4xl">💬</span>
+  // Empty state
+  if (!currentChat) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-gray-50 p-4 sm:p-6 md:p-8">
+        <div className="text-center max-w-xs sm:max-w-sm md:max-w-md mx-auto">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-primary-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <span className="text-white text-2xl sm:text-3xl md:text-4xl">💬</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-800 mb-2">
+            Welcome to ChatApp
+          </h2>
+          <p className="text-gray-600 text-sm sm:text-base md:text-lg">
+            Select a chat to start messaging
+          </p>
         </div>
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-800 mb-2">
-          Welcome to ChatApp
-        </h2>
-        <p className="text-gray-600 text-sm sm:text-base md:text-lg">
-          Select a chat to start messaging
-        </p>
       </div>
-    </div>
-  );
-}
+    )
+  }
 
-
-  // ✅ UI
   return (
     <div className="flex-1 flex flex-col h-screen max-h-screen">
       {/* Header */}
@@ -316,7 +310,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
             <Paperclip className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
 
-          <div className="flex-1 relative">
+          <div className="flex-1 relative" ref={emojiPickerRef}>
             <input
               type="text"
               value={message}
@@ -324,12 +318,40 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
               placeholder="Type a message..."
               className="w-full px-3 py-2 bg-gray-100 rounded-full focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none text-sm sm:text-base"
             />
+
+            {/* Smile Button */}
             <button
               type="button"
+              onClick={() => setShowEmojiPicker((prev) => !prev)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               <Smile className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
+
+            {/* Emoji Picker */}
+            <AnimatePresence>
+              {showEmojiPicker && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute z-50 shadow-lg rounded-lg bg-white max-w-[90vw] sm:max-w-[300px] w-full sm:w-auto"
+                  style={{
+                    bottom: "3rem", // positions above input
+                    right: 0,
+                  }}
+                >
+                  <Picker
+                    data={emojiData}
+                    onEmojiSelect={addEmoji}
+                    theme="light"
+                    emojiSize={24}
+                    previewPosition="none"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <motion.button

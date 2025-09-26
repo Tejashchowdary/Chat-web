@@ -1,6 +1,11 @@
 import { motion } from 'framer-motion'
 import { formatFileSize, getFileIcon } from '../../utils/fileUpload'
 
+// Helper to check if a message is only emojis
+const isOnlyEmoji = (text) => {
+  return text && text.replace(/\s/g, '').match(/^\p{Emoji}+$/u)
+}
+
 const MessageBubble = ({ message, isOwn }) => {
   // Format date + time with Today / Yesterday / Older
   const formatDateTime = (date) => {
@@ -22,10 +27,7 @@ const MessageBubble = ({ message, isOwn }) => {
     if (isToday) {
       return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     } else if (isYesterday) {
-      return `Yesterday, ${d.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      })}`
+      return `Yesterday, ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
     } else {
       return d.toLocaleString('en-US', {
         month: 'short',
@@ -88,7 +90,19 @@ const MessageBubble = ({ message, isOwn }) => {
         )
 
       default:
-        return <p className="text-sm break-words">{message.content}</p>
+        const emojiOnly = isOnlyEmoji(message.content)
+        return (
+          <p
+            className="break-words"
+            style={{
+              fontSize: emojiOnly ? '2rem' : '1rem',
+              lineHeight: emojiOnly ? 1 : 1.5,
+              textAlign: emojiOnly ? 'center' : 'left',
+            }}
+          >
+            {message.content}
+          </p>
+        )
     }
   }
 
