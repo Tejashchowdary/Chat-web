@@ -264,7 +264,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3">
+      <div className={`flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 ${isMobile ? "pb-20" : ""}`}>
         {messages.map((m) => (
           <MessageBubble
             key={m._id}
@@ -298,7 +298,13 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t border-gray-200 p-2 sm:p-4 sticky bottom-0 z-30">
+      <div
+        className={`bg-white border-t border-gray-200 p-2 sm:p-4 ${
+          isMobile
+            ? "fixed bottom-0 left-0 w-full z-50"
+            : "sticky bottom-0 z-30"
+        }`}
+      >
         <form
           onSubmit={handleSendMessage}
           className="flex items-center space-x-2 sm:space-x-3"
@@ -337,7 +343,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
                   transition={{ duration: 0.2 }}
-                 className="absolute z-50 shadow-lg rounded-lg bg-white max-w-[90vw] sm:max-w-[300px] w-full sm:w-auto"
+                  className="absolute z-50 shadow-lg rounded-lg bg-white max-w-[90vw] sm:max-w-[300px] w-full sm:w-auto"
                   style={{
                     bottom: "3rem", // positions above input
                     right: 0,
