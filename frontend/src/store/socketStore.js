@@ -2,13 +2,13 @@ import { create } from 'zustand'
 import { io } from 'socket.io-client'
 import toast from 'react-hot-toast'
 import { useChatStore } from './chatStore'
-
+import { useCallStore } from './callStore'
 export const useSocketStore = create((set, get) => ({
   socket: null,
   onlineUsers: new Map(),
   typingUsers: new Map(),
   
-  connect: (user) => {
+  connect: () => {
     const { socket } = get()
     
     if (socket?.connected) return
@@ -26,15 +26,17 @@ export const useSocketStore = create((set, get) => ({
     newSocket.on('connect', () => {
       console.log('Connected to server')
       set({ socket: newSocket })
+      useCallStore.getState().initializeCall(newSocket)
     })
 
     newSocket.on('userStatusUpdate', ({ userId, status }) => {
       set(state => {
         const newOnlineUsers = new Map(state.onlineUsers)
+          const id = String(userId) 
         if (status === 'online') {
-          newOnlineUsers.set(userId, true)
+          newOnlineUsers.set(id, true)
         } else {
-          newOnlineUsers.delete(userId)
+          newOnlineUsers.delete(id)
         }
         return { onlineUsers: newOnlineUsers }
       })
