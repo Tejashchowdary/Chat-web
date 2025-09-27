@@ -214,10 +214,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
   return (
     <div className="flex-1 flex flex-col h-screen max-h-screen">
       {/* Header */}
-      <div className=" bg-white border-b border-gray-200 px-2 sm:px-4 
-                    py-[calc(0.5rem+env(safe-area-inset-top))] sm:py-3 
-                    flex items-center justify-between 
-                    relative z-20">
+      <div className="bg-white border-b border-gray-200 px-2 sm:px-4 py-2 sm:py-3 flex items-center justify-between relative z-20">
         <div className="flex items-center space-x-2 sm:space-x-3 relative z-20">
           {isMobile && (
             <button
@@ -315,9 +312,7 @@ const ChatWindow = ({ onToggleSidebar, isMobile }) => {
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t border-gray-200 
-    px-2 sm:px-4 
-    py-[calc(0.5rem+env(safe-area-inset-bottom))] sm:py-4">
+      <div className="bg-white border-t border-gray-200 p-2 sm:p-4">
         <form
           onSubmit={handleSendMessage}
           className="flex items-center space-x-2 sm:space-x-3"
